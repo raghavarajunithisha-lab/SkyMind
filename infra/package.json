@@ -1,0 +1,20 @@
+{
+    "name": "skymind-infra",
+    "version": "1.0.0",
+    "bin": {
+        "skymind": "bin/skymind.js"
+    },
+    "scripts": {
+        "build": "echo \"Building CDK...\"",
+        "watch": "tsc -w",
+        "test": "jest",
+        "cdk": "cdk"
+    },
+    "devDependencies": {
+        "aws-cdk": "^2.130.0"
+    },
+    "dependencies": {
+        "aws-cdk-lib": "^2.130.0",
+        "constructs": "^10.0.0"
+    }
+}

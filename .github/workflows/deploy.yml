@@ -1,0 +1,76 @@
+name: SkyMind CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Required for OIDC JWT token generation
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+          
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Lint Frontend
+        working-directory: ./frontend
+        run: npm run lint
+        continue-on-error: true # For POC, don't fail strictly on lint
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci || npm install # fallback if no lockfile
+
+  deploy:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install AWS CDK
+        run: npm install -g aws-cdk
+
+      - name: Install Infra Dependencies
+        working-directory: ./infra
+        run: npm ci || npm install
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Note: Replace <YOUR-AWS-ACCOUNT-ID> with your actual 12-digit AWS Account ID
+          # role-to-assume: arn:aws:iam::<YOUR-AWS-ACCOUNT-ID>:role/SkyMindGitHubDeployRole
+          # For security and reusability, we recommend setting this as a GitHub Secret Action Variable:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: CDK Synth
+        working-directory: ./infra
+        run: cdk synth SkyMindTier1Stack
+
+      - name: CDK Deploy Main Stack
+        working-directory: ./infra
+        run: cdk deploy SkyMindTier1Stack --require-approval never
