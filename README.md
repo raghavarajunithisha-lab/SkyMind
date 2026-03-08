@@ -2,7 +2,6 @@
 
 SkyMind is a self-healing, self-optimizing cloud infrastructure system built on AWS. It uses **Amazon Bedrock (Claude Haiku)** and specialized AI agents to monitor your AWS environment, predict failures, execute autonomous remediation, and optimize your cloud spend in real-time.
 
-![SkyMind Dashboard Demo](./docs/dashboard-demo.png) *(Note: Add the dashboard screenshot you captured here later!)*
 
 ## 🚀 The 4 Core Capabilities
 
