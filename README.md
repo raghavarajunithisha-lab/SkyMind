@@ -141,5 +141,3 @@ Companies spend billions of dollars annually on cloud waste and reactive inciden
 
 I built SkyMind to demonstrate that modern infrastructure monitoring shouldn't just be dashboards — it should be an **autonomous, self-healing agent** that actively saves money and reduces downtime.
 
----
-*Built as a Tier 1 Technical Proof of Concept.*
