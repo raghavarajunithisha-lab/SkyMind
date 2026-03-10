@@ -3,7 +3,7 @@
 import { DollarSign, TrendingDown, AlertTriangle } from 'lucide-react';
 
 export default function CostPanel({ costData }) {
-    if (!costData) return null;
+    if (!costData || !costData.breakdown || !Array.isArray(costData.breakdown)) return null;
 
     const maxAmount = Math.max(...costData.breakdown.map(s => s.amount));
 

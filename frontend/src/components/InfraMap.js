@@ -9,7 +9,8 @@ export default function InfraMap({ resources, connections }) {
     const containerRef = useRef(null);
 
     useEffect(() => {
-        if (!resources || !connections || !svgRef.current || !containerRef.current) return;
+        if (!resources || !svgRef.current || !containerRef.current) return;
+        const safeConnections = connections || [];
 
         // Dynamically import d3 on client side only
         import('d3').then(d3 => {
@@ -41,7 +42,7 @@ export default function InfraMap({ resources, connections }) {
             const nodeMap = {};
             nodes.forEach(n => { nodeMap[n.id] = n; });
 
-            const links = connections
+            const links = safeConnections
                 .filter(c => nodeMap[c.source] && nodeMap[c.target])
                 .map(c => ({
                     source: c.source,

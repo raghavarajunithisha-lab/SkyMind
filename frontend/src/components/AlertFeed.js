@@ -10,7 +10,7 @@ const severityConfig = {
 };
 
 export default function AlertFeed({ alerts }) {
-    if (!alerts) return null;
+    if (!alerts || !Array.isArray(alerts)) return null;
 
     const unresolvedCount = alerts.filter(a => !a.resolved).length;
 

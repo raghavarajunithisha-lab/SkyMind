@@ -13,7 +13,7 @@ exports.handler = async (event) => {
         const resources = await scanTable(RESOURCES_TABLE);
         if (!resources || resources.length === 0) {
             console.log('No resources found to monitor.');
-            return { statusCode: 200, body: 'No resources' };
+            return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'No resources' }) };
         }
 
         const EndTime = new Date();
@@ -60,6 +60,7 @@ exports.handler = async (event) => {
         console.log(`Metrics collector finished. Processed ${processedCount} resources.`);
         return {
             statusCode: 200,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Metrics collected', count: processedCount })
         };
 
@@ -67,6 +68,7 @@ exports.handler = async (event) => {
         console.error('Error collecting metrics:', error);
         return {
             statusCode: 500,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Metrics collection failed', error: error.message })
         };
     }

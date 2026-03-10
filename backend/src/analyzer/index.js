@@ -11,7 +11,7 @@ exports.handler = async (event) => {
         // 1. Fetch recent metrics highlighting anomalies
         const allMetrics = await scanTable(METRICS_TABLE);
         if (!allMetrics || allMetrics.length === 0) {
-            return { statusCode: 200, body: 'No metrics to analyze' };
+            return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'No metrics to analyze' }) };
         }
 
         // Filter metrics from the last 10 minutes that have anomalies
@@ -19,7 +19,7 @@ exports.handler = async (event) => {
 
         if (recentAnomalies.length === 0) {
             console.log('No recent anomalies found. Infrastructure is healthy.');
-            return { statusCode: 200, body: 'No anomalies' };
+            return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'No anomalies', alerts: [] }) };
         }
 
         console.log(`Analyzing ${recentAnomalies.length} anomalous metrics...`);
@@ -67,6 +67,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Analysis complete', anomaliesProcessed: recentAnomalies.length })
         };
 
@@ -74,6 +75,7 @@ exports.handler = async (event) => {
         console.error('Error in analyzer:', error);
         return {
             statusCode: 500,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Analysis failed', error: error.message })
         };
     }

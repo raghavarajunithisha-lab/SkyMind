@@ -61,8 +61,8 @@ class SkyMindStack extends Stack {
         // 2a. Scanner: discovers resources
         const scannerFunction = new lambda.Function(this, 'ScannerFunction', {
             ...lambdaCommonProps,
-            code: lambda.Code.fromAsset('../backend/src/scanner'), // Will need bundling in real scenerio
-            handler: 'index.handler',
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'scanner/index.handler',
         });
         resourcesTable.grantReadWriteData(scannerFunction);
         scannerFunction.addToRolePolicy(new iam.PolicyStatement({
@@ -73,8 +73,8 @@ class SkyMindStack extends Stack {
         // 2b. Metrics Collector: grabs CloudWatch metrics
         const metricsFunction = new lambda.Function(this, 'MetricsFunction', {
             ...lambdaCommonProps,
-            code: lambda.Code.fromAsset('../backend/src/metrics'),
-            handler: 'index.handler',
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'metrics/index.handler',
             timeout: Duration.seconds(60), // CloudWatch querying can take longer
         });
         resourcesTable.grantReadData(metricsFunction);
@@ -87,8 +87,8 @@ class SkyMindStack extends Stack {
         // 2c. AI Analyzer: uses Bedrock to find root causes
         const analyzerFunction = new lambda.Function(this, 'AnalyzerFunction', {
             ...lambdaCommonProps,
-            code: lambda.Code.fromAsset('../backend/src/analyzer'),
-            handler: 'index.handler',
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'analyzer/index.handler',
             timeout: Duration.minutes(1), // LLM calls need more time
         });
         metricsTable.grantReadData(analyzerFunction);
@@ -101,16 +101,16 @@ class SkyMindStack extends Stack {
         // 2d. Healer: Executes remediation
         const healerFunction = new lambda.Function(this, 'HealerFunction', {
             ...lambdaCommonProps,
-            code: lambda.Code.fromAsset('../backend/src/healer'),
-            handler: 'index.handler',
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'healer/index.handler',
         });
         alertsTable.grantReadWriteData(healerFunction);
 
         // 2e. Chat API: Natural language ops
         const chatFunction = new lambda.Function(this, 'ChatFunction', {
             ...lambdaCommonProps,
-            code: lambda.Code.fromAsset('../backend/src/chat'),
-            handler: 'index.handler',
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'chat/index.handler',
             timeout: Duration.seconds(45),
         });
         resourcesTable.grantReadData(chatFunction);
@@ -135,6 +135,18 @@ class SkyMindStack extends Stack {
 
         const chatResource = api.root.addResource('chat');
         chatResource.addMethod('POST', new apigateway.LambdaIntegration(chatFunction));
+
+        // Connect Dashboard UI endpoints to corresponding Lambda functions
+        const resourcesApi = api.root.addResource('resources');
+        const metricsApi = api.root.addResource('metrics');
+        const alertsApi = api.root.addResource('alerts');
+        const costApi = api.root.addResource('cost');
+
+        // Reuse existing functions to serve the data (in a real app, you'd use dedicated reader Lambdas)
+        resourcesApi.addMethod('GET', new apigateway.LambdaIntegration(scannerFunction));
+        metricsApi.addMethod('GET', new apigateway.LambdaIntegration(metricsFunction));
+        alertsApi.addMethod('GET', new apigateway.LambdaIntegration(analyzerFunction));
+        costApi.addMethod('GET', new apigateway.LambdaIntegration(metricsFunction));
 
         // Automated Schedules (EventBridge)
         // Run scanner every 10 min

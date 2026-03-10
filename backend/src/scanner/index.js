@@ -60,13 +60,15 @@ exports.handler = async (event, context) => {
         console.log(`Scanner finished successfully. Found ${savedCount} resources.`);
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Scan complete', count: savedCount })
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Scan complete', count: savedCount, resources })
         };
 
     } catch (error) {
         console.error('Error scanning resources:', error);
         return {
             statusCode: 500,
+            headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Scan failed', error: error.message })
         };
     }

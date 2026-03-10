@@ -4,7 +4,9 @@ import { Activity } from 'lucide-react';
 import { serviceIcons } from '../lib/mockData';
 
 export default function HealthPanel({ resources, metrics }) {
-    if (!resources || !metrics) return null;
+    if (!resources) return null;
+    // metrics may be a raw API response object {message, count} instead of a lookup object
+    const metricsLookup = (metrics && typeof metrics === 'object' && !metrics.message) ? metrics : {};
 
     const getStatusClass = (status) => {
         if (status === 'critical') return 'critical';
@@ -13,7 +15,7 @@ export default function HealthPanel({ resources, metrics }) {
     };
 
     const getMainMetrics = (resource) => {
-        const m = metrics[resource.id];
+        const m = metricsLookup[resource.id];
         if (!m) return [];
 
         switch (resource.type) {

@@ -25,9 +25,15 @@ export default function ChatPanel() {
 
         try {
             const data = await sendChatMessage(userMessage);
-            setMessages(prev => [...prev, { role: 'ai', content: data.response }]);
-        } catch {
-            setMessages(prev => [...prev, { role: 'ai', content: '❌ Sorry, I encountered an error analyzing your infrastructure. Please try again.' }]);
+            if (data && data.response) {
+                setMessages(prev => [...prev, { role: 'ai', content: data.response }]);
+            } else if (data && data.error) {
+                setMessages(prev => [...prev, { role: 'ai', content: `❌ API Error: ${data.error}` }]);
+            } else {
+                setMessages(prev => [...prev, { role: 'ai', content: '❌ Received an empty or invalid response from the server.' }]);
+            }
+        } catch (err) {
+            setMessages(prev => [...prev, { role: 'ai', content: `❌ Connection error: ${err.message || 'Unknown error'}` }]);
         } finally {
             setIsTyping(false);
         }
@@ -61,10 +67,10 @@ export default function ChatPanel() {
                                 {msg.role === 'user' ? 'U' : '🧠'}
                             </div>
                             <div className="chat-bubble">
-                                {msg.content.split('\n').map((line, j) => (
+                                {(msg.content || '').split('\n').map((line, j) => (
                                     <span key={j}>
                                         {line.replace(/\*\*(.*?)\*\*/g, '«$1»')}
-                                        {j < msg.content.split('\n').length - 1 && <br />}
+                                        {j < (msg.content || '').split('\n').length - 1 && <br />}
                                     </span>
                                 ))}
                             </div>
