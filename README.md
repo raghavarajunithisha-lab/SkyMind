@@ -7,8 +7,11 @@ SkyMind is a self-healing, self-optimizing cloud infrastructure system built on 
 
 1. **Live Infrastructure Map**: Real-time D3.js visualization of all your AWS resources, dependencies, and health statuses.
 2. **AI Cost Optimizer**: Continuously scans for waste (idle instances, over-provisioned databases, old logs) and calculates exact dollar savings.
-3. **Predictive Failure & Self-Healing**: Detects anomalies in CloudWatch metrics, predicts failures before they trigger downtime, and auto-executes remediation (e.g., auto-scaling, restarting tasks). High-risk actions demand human approval.
-4. **Natural Language Ops**: Chat with your infrastructure. Ask *"Why did latency spike?"* and SkyMind queries your logs, traces the root cause, and responds in plain English with evidence.
+3. **Health Monitor**: Detects CloudWatch anomalies, predicts failures before downtime, and auto-executes remediation (auto-scaling, task restarts). High-risk actions require human approval.
+4. **AI chat & Alerts**: Chat with your infrastructure. Ask *"Why did latency spike?"* and SkyMind queries your logs, traces the root cause, and responds in plain English with evidence.
+
+<img width="1919" height="897" alt="Skymind" src="https://github.com/user-attachments/assets/17fb2c88-4dee-48ce-9d77-ea612ae3dbbc" />
+
 
 ## 🏗️ Technical Architecture (Serverless & Event-Driven)
 
@@ -127,16 +130,51 @@ To deploy this AI agent directly into your AWS account to begin scanning for bug
    npx cdk deploy SkyMindGitHubOidcStack
    ```
    *Copy the resulting Role ARN output.*
-3. **Add the Deployment Secret**: 
-   In your GitHub Repository, navigate to **Settings > Secrets and variables > Actions** and add `AWS_OIDC_ROLE_ARN` with the Role ARN.
-4. **Deploy the Agents**:
-   Push any commit to the `main` branch. GitHub Actions will securely authenticate to your AWS account and instantly deploy the Lambda agents, DynamoDB tables, and API Gateway using AWS CDK.
+3. **Add the Deployment Secret in GitHub**
+
+Navigate to your repository's secret settings:
+
+```
+Settings → Secrets and variables → Actions
+```
+
+Create a new repository secret with the following values:
+
+| Field | Value |
+|-------|-------|
+| **Name** | `AWS_OIDC_ROLE_ARN` |
+| **Value** | `<SkyMindGitHubDeployRole Role ARN>` |
+
+> Paste the Role ARN you copied from the CDK deployment output.
+
+---
+
+4. **Configure the Frontend Environment**
+
+Create the following file in your project:
+
+```
+skymind/frontend/.env.local
+```
+
+Add this environment variable:
+
+```env
+NEXT_PUBLIC_API_URL=<SkyMindTier1Stack.SkyMindApiEndpoint8E0146FF>
+```
+
+---
+
+5. **Find the API Endpoint Output**
+
+To retrieve the value for `SkyMindTier1Stack.SkyMindApiEndpoint8E0146FF`:
+
+1. Go to **GitHub → Actions**
+2. Click on the **latest deployment workflow**
+3. Open the **Deploy** job
+4. Find the step where CDK deploys the main stack
+5. Scroll down to the **Outputs** section
+
 
 **Result**: Within 5 minutes, the SkyMind active scanners will wake up, map your entire AWS architecture, flag failing resources, identify idle costs, and expose the data to the Next.js React Dashboard.
-
-## 🤔 Business Value
-
-Companies spend billions of dollars annually on cloud waste and reactive incident management. Existing tools (Datadog, PagerDuty) tell you *when* things break; they don't fix them for you. 
-
-I built SkyMind to demonstrate that modern infrastructure monitoring shouldn't just be dashboards — it should be an **autonomous, self-healing agent** that actively saves money and reduces downtime.
 
