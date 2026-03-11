@@ -54,13 +54,13 @@ export default function ChatPanel() {
     ];
 
     return (
-        <div className="glass-panel" style={{ flex: 1, minWidth: 0 }}>
+        <div className="glass-panel" style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
             <div className="panel-header">
                 <h2><MessageSquare className="panel-icon" /> AI Chat</h2>
                 <span className="panel-badge">Bedrock</span>
             </div>
-            <div className="chat-container">
-                <div className="chat-messages">
+            <div className="chat-container" style={{ overflow: 'hidden' }}>
+                <div className="chat-messages" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
                     {messages.map((msg, i) => (
                         <div key={i} className={`chat-message ${msg.role === 'user' ? 'user' : 'ai'}`}>
                             <div className={`chat-avatar ${msg.role === 'user' ? 'human' : 'ai'}`}>

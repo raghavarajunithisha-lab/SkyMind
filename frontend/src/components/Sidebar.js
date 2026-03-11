@@ -1,10 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { LayoutDashboard, Map, DollarSign, MessageSquare, Bell, Activity, Shield, Settings, Zap } from 'lucide-react';
 
 const navItems = [
     { section: 'Overview' },
-    { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', active: true },
+    { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
     { icon: Map, label: 'Infrastructure Map', id: 'infra' },
     { icon: Activity, label: 'Health Monitor', id: 'health' },
     { section: 'Intelligence' },
@@ -18,6 +19,14 @@ const navItems = [
 ];
 
 export default function Sidebar({ stats }) {
+    const [activeId, setActiveId] = useState('dashboard');
+
+    const handleScroll = (id) => {
+        setActiveId(id);
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
         <aside className="sidebar">
             <div className="sidebar-logo">
@@ -35,7 +44,12 @@ export default function Sidebar({ stats }) {
                     }
                     const Icon = item.icon;
                     return (
-                        <div key={item.id} className={`nav-item ${item.active ? 'active' : ''}`}>
+                        <div
+                            key={item.id}
+                            className={`nav-item ${activeId === item.id ? 'active' : ''}`}
+                            onClick={() => handleScroll(item.id)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <Icon className="nav-icon" />
                             <span>{item.label}</span>
                         </div>

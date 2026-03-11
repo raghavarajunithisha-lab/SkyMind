@@ -8,12 +8,12 @@ export const mockResources = [
     { id: 'rds-main', type: 'RDS', name: 'main-database', status: 'healthy', region: 'us-east-1', engine: 'PostgreSQL 15', instanceClass: 'db.t3.medium' },
     { id: 'rds-replica', type: 'RDS', name: 'read-replica', status: 'healthy', region: 'us-east-1', engine: 'PostgreSQL 15', instanceClass: 'db.t3.small' },
     { id: 'lambda-auth', type: 'Lambda', name: 'auth-handler', status: 'healthy', region: 'us-east-1', runtime: 'nodejs18.x', memory: 256 },
-    { id: 'lambda-process', type: 'Lambda', name: 'data-processor', status: 'critical', region: 'us-east-1', runtime: 'python3.11', memory: 512 },
+    { id: 'lambda-process', type: 'Lambda', name: 'data-processor', status: 'critical', region: 'us-east-1', runtime: 'python3.11', memory: 512, skymind: true }, // SkyMind Mock
     { id: 'lambda-notify', type: 'Lambda', name: 'notification-svc', status: 'healthy', region: 'us-east-1', runtime: 'nodejs18.x', memory: 128 },
-    { id: 's3-assets', type: 'S3', name: 'app-assets-prod', status: 'healthy', region: 'us-east-1', sizeGB: 45.2 },
+    { id: 's3-assets', type: 'S3', name: 'app-assets-prod', status: 'healthy', region: 'us-east-1', sizeGB: 45.2, skymind: true }, // SkyMind Mock
     { id: 's3-logs', type: 'S3', name: 'app-logs-prod', status: 'healthy', region: 'us-east-1', sizeGB: 128.7 },
     { id: 'dynamo-sessions', type: 'DynamoDB', name: 'user-sessions', status: 'healthy', region: 'us-east-1', readCapacity: 50, writeCapacity: 25 },
-    { id: 'dynamo-cache', type: 'DynamoDB', name: 'api-cache', status: 'warning', region: 'us-east-1', readCapacity: 100, writeCapacity: 50 },
+    { id: 'dynamo-cache', type: 'DynamoDB', name: 'api-cache', status: 'warning', region: 'us-east-1', readCapacity: 100, writeCapacity: 50, skymind: true }, // SkyMind Mock
     { id: 'apigw-main', type: 'APIGateway', name: 'main-api', status: 'healthy', region: 'us-east-1', stage: 'prod' },
     { id: 'elb-main', type: 'ELB', name: 'main-load-balancer', status: 'healthy', region: 'us-east-1', type: 'ALB' },
     { id: 'cloudfront-cdn', type: 'CloudFront', name: 'cdn-distribution', status: 'healthy', region: 'global' },
@@ -122,12 +122,12 @@ export const serviceIcons = {
 
 // Service type colors for the infra map
 export const serviceColors = {
-    'EC2': '#3b82f6',
-    'RDS': '#8b5cf6',
-    'Lambda': '#f59e0b',
-    'S3': '#10b981',
-    'DynamoDB': '#06b6d4',
-    'APIGateway': '#ec4899',
-    'ELB': '#f97316',
-    'CloudFront': '#a855f7',
+    'EC2': '#e0e0e0',
+    'RDS': '#b0b0b0',
+    'Lambda': '#ffffff',
+    'S3': '#9e9e9e',
+    'DynamoDB': '#c8c8c8',
+    'APIGateway': '#d4d4d4',
+    'ELB': '#8a8a8a',
+    'CloudFront': '#f5f5f5',
 };

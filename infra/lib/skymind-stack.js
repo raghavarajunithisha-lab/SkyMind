@@ -48,7 +48,7 @@ class SkyMindStack extends Stack {
         // 2. COMPUTE LAYER (Lambda Functions)
         // ==========================================
         const lambdaCommonProps = {
-            runtime: lambda.Runtime.NODEJS_18_X,
+            runtime: lambda.Runtime.NODEJS_20_X,
             timeout: Duration.seconds(30),
             memorySize: 256,
             environment: {
@@ -66,7 +66,16 @@ class SkyMindStack extends Stack {
         });
         resourcesTable.grantReadWriteData(scannerFunction);
         scannerFunction.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['ec2:DescribeInstances', 'lambda:ListFunctions'],
+            actions: [
+                'ec2:DescribeInstances',
+                'lambda:ListFunctions',
+                's3:ListAllMyBuckets',
+                'dynamodb:ListTables',
+                'rds:DescribeDBInstances',
+                'apigateway:GET',
+                'elasticloadbalancing:DescribeLoadBalancers',
+                'cloudfront:ListDistributions'
+            ],
             resources: ['*'],
         }));
 
@@ -106,7 +115,19 @@ class SkyMindStack extends Stack {
         });
         alertsTable.grantReadWriteData(healerFunction);
 
-        // 2e. Chat API: Natural language ops
+        // 2e. Cost Collector: grabs AWS Cost Explorer data
+        const costFunction = new lambda.Function(this, 'CostFunction', {
+            ...lambdaCommonProps,
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'cost/index.handler',
+            timeout: Duration.seconds(30),
+        });
+        costFunction.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['ce:GetCostAndUsage'],
+            resources: ['*'],
+        }));
+
+        // 2f. Chat API: Natural language ops
         const chatFunction = new lambda.Function(this, 'ChatFunction', {
             ...lambdaCommonProps,
             code: lambda.Code.fromAsset('../backend/src'),
@@ -117,6 +138,30 @@ class SkyMindStack extends Stack {
         alertsTable.grantReadData(chatFunction);
         chatFunction.addToRolePolicy(new iam.PolicyStatement({
             actions: ['bedrock:InvokeModel'],
+            resources: ['*'],
+        }));
+
+        // 2g. Alerts Collector: queries real CloudWatch alarms
+        const alertsFunction = new lambda.Function(this, 'AlertsFunction', {
+            ...lambdaCommonProps,
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'alerts/index.handler',
+            timeout: Duration.seconds(30),
+        });
+        alertsFunction.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['cloudwatch:DescribeAlarms'],
+            resources: ['*'],
+        }));
+
+        // 2h. Metrics Reader: queries real CloudWatch metrics for dashboard display
+        const metricsReaderFunction = new lambda.Function(this, 'MetricsReaderFunction', {
+            ...lambdaCommonProps,
+            code: lambda.Code.fromAsset('../backend/src'),
+            handler: 'metricsReader/index.handler',
+            timeout: Duration.seconds(45),
+        });
+        metricsReaderFunction.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['cloudwatch:GetMetricStatistics'],
             resources: ['*'],
         }));
 
@@ -144,9 +189,9 @@ class SkyMindStack extends Stack {
 
         // Reuse existing functions to serve the data (in a real app, you'd use dedicated reader Lambdas)
         resourcesApi.addMethod('GET', new apigateway.LambdaIntegration(scannerFunction));
-        metricsApi.addMethod('GET', new apigateway.LambdaIntegration(metricsFunction));
-        alertsApi.addMethod('GET', new apigateway.LambdaIntegration(analyzerFunction));
-        costApi.addMethod('GET', new apigateway.LambdaIntegration(metricsFunction));
+        metricsApi.addMethod('GET', new apigateway.LambdaIntegration(metricsReaderFunction));
+        alertsApi.addMethod('GET', new apigateway.LambdaIntegration(alertsFunction));
+        costApi.addMethod('GET', new apigateway.LambdaIntegration(costFunction));
 
         // Automated Schedules (EventBridge)
         // Run scanner every 10 min

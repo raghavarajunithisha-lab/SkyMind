@@ -10,9 +10,15 @@ export async function fetchResources() {
     return res.json();
 }
 
-export async function fetchMetrics() {
+export async function fetchMetrics(resources) {
     if (USE_MOCK) return mockMetrics;
-    const res = await fetch(`${API_BASE}/metrics`);
+    let queryString = '';
+    if (resources && resources.length > 0) {
+        // Only send necessary fields to avoid exceeding URL length limits
+        const miniResources = resources.map(r => ({ id: r.id, type: r.type, name: r.name }));
+        queryString = `?resources=${encodeURIComponent(JSON.stringify(miniResources))}`;
+    }
+    const res = await fetch(`${API_BASE}/metrics${queryString}`);
     return res.json();
 }
 
